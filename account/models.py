@@ -35,17 +35,34 @@ class MyAccountManager(BaseUserManager):
 class Account(AbstractBaseUser, PermissionsMixin):
     username_validator = UnicodeUsernameValidator()
 
-    email = models.EmailField(verbose_name="email", max_length=60, unique=True)
-    username = models.CharField(
+    TID = models.IntegerField(_('table id'), primary_key=True)
+    Emp_ID = models.CharField(_('employee id'), max_length=10, unique=True, error_messages={
+        'unique': _("A user with that username already exists."),
+    }, )
+    Username = models.CharField(
         _('username'),
-        max_length=150,
+        max_length=50,
         unique=True,
-        help_text=_('Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'),
+        help_text=_('Required. 50 characters or fewer. Letters, digits and @/./+/-/_ only.'),
         validators=[username_validator],
         error_messages={
             'unique': _("A user with that username already exists."),
         },
     )
+    FName = models.CharField(_('first name'), max_length=50, blank=True, null=True)
+    MI = models.CharField(_('middle initial'), max_length=50, blank=True, null=True)
+    LName = models.CharField(_('last name'), max_length=50, blank=True, null=True)
+    Designation = models.CharField(_('designation'), max_length=50, blank=True, null=True)
+    Office = models.CharField(_('office'), max_length=50, blank=True, null=True)
+    Department = models.CharField(_('department'), max_length=50, blank=True, null=True)
+    BranchCode = models.CharField(_('branch code'), max_length=10)
+    Email_Address = models.EmailField(_('email'), max_length=50, unique=True)
+    Is_SuperUser = models.BooleanField(
+        _('staff status'),
+        default=False,
+        help_text=_('Designates whether this user should be treated as a superuser.'),
+    )
+
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now_add=True)
     is_admin = models.BooleanField(default=False)
