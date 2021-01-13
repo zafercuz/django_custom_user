@@ -1,13 +1,15 @@
 from django.db import connections
 from django.http import HttpResponse
-from django.shortcuts import render
+from account.models import Account
 
 
-# Create your views here.
 def connect_user(self):
-    with connections['other_db'].cursor() as cursor:
-        cursor.execute("SELECT * FROM dbo.UserManagement")
-        result = cursor.fetchall()
-    print(result)
-    print("Try connect here")
+    # with connections['other_db'].cursor() as cursor:
+    #     cursor.execute("SELECT * FROM dbo.UserManagement")
+    #     result = cursor.fetchall()
+    # print(result)
+
+    # Defer means to exclude column fields from the DB
+    user = Account.objects.using("other_db").defer("is_active", "is_staff")
+    print(user)
     return HttpResponse("Hello World")
