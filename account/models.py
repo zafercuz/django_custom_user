@@ -57,15 +57,26 @@ class Account(AbstractBaseUser, PermissionsMixin):
     Department = models.CharField(_('department'), max_length=50, blank=True, null=True)
     BranchCode = models.CharField(_('branch code'), max_length=10)
     Email_Address = models.EmailField(_('email'), max_length=50, unique=True)
-    Is_SuperUser = models.BooleanField(
-        _('staff status'),
+    is_superuser = models.BooleanField(
+        _('superuser status'),
         default=False,
         help_text=_('Designates whether this user should be treated as a superuser.'),
     )
-
-    date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
-    last_login = models.DateTimeField(verbose_name='last login', auto_now_add=True)
-    is_admin = models.BooleanField(default=False)
+    Is_Admin = models.BooleanField(
+        _('admin status'),
+        default=False,
+        help_text=_('Designates whether this user should be treated as an admin.'),
+    )
+    Is_HR = models.BooleanField(
+        _('hr status'),
+        default=False,
+        help_text=_('Designates whether this user should be treated as a HR.'),
+    )
+    Is_LMS = models.BooleanField(
+        _('lms status'),
+        default=False,
+        help_text=_('Designates whether this user should be treated as a lms.'),
+    )
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
@@ -79,19 +90,46 @@ class Account(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
-    is_superuser = models.BooleanField(default=False)
+    IPAdd_Login = models.GenericIPAddressField(_('ip address login'), blank=True, null=True)
+    IsOnline = models.BooleanField(_('is online'), default=False,
+                                   help_text=_('Designates whether the user is online.'))
+    Machine = models.CharField(max_length=20, blank=True, null=True)
+    Product_Version = models.CharField(max_length=20, blank=True, null=True)
+    Is_Approver = models.BooleanField(
+        _('approver'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as an approver.'
+        ),
+    )
+    Company = models.CharField(max_length=100, blank=True, null=True)
+    Is_Inquiry = models.BooleanField(
+        _('inquiry'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as an inquiry.'
+        ),
+    )
+    TransactedBy = models.CharField(max_length=50, blank=True, null=True)
+    PostingDate = models.DateTimeField(_('posting date'), blank=True, null=True)
+    Reset_Pass = models.BooleanField(default=False, blank=True, null=True)
+    UFullName = models.CharField(max_length=100, blank=True, null=True)
+    BranchName = models.CharField(max_length=50, blank=True, null=True)
+    CCode = models.CharField(max_length=10, blank=True, null=True)
+    Is_UniformMgmt = models.BooleanField(default=False, blank=True, null=True)
+    Is_Insurance = models.BooleanField(default=False, blank=True, null=True)
 
-    EMAIL_FIELD = 'email'
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    EMAIL_FIELD = 'Email_Address'
+    USERNAME_FIELD = 'Email_Address'
+    REQUIRED_FIELDS = ['Username']
 
     objects = MyAccountManager()
 
     def __str__(self):
-        return self.email
+        return self.Email_Address
 
     def has_perm(self, perm, obj=None):
-        return self.is_admin
+        return self.Is_Admin
 
     def has_module_perms(self, app_label):
         return True
