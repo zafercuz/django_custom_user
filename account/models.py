@@ -1,47 +1,19 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 
-
-class MyAccountManager(BaseUserManager):
-    def create_user(self, email, username, password=None):
-        print("create user")
-        if not email:
-            raise ValueError("Users must have an email address")
-        if not username:
-            raise ValueError("Users must have an username")
-
-        user = self.model(
-            Email_Address=self.normalize_email(email),
-            Username=username
-        )
-
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, username, password):
-        print("create superuser")
-        user = self.create_user(
-            email=self.normalize_email(email),
-            password=password,
-            username=username
-        )
-        user.Is_Admin = True
-        user.is_staff = True
-        user.is_superuser = True
-        user.save(using=self._db)
+from account.managers import MyAccountManager
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
     username_validator = UnicodeUsernameValidator()
-    
-    TID = models.IntegerField(_('table id'), primary_key=True)
+
+    TID = models.AutoField(_('table id'), auto_created=True, primary_key=True)
     Emp_ID = models.CharField(_('employee id'), max_length=10, unique=True, error_messages={
         'unique': _("A user with that username already exists."),
     }, )
-    Username = models.CharField(
+    username = models.CharField(
         _('username'),
         max_length=50,
         unique=True,
@@ -50,6 +22,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
         error_messages={
             'unique': _("A user with that username already exists."),
         },
+        db_column='Username'
     )
     password = models.CharField(_('password'), max_length=128, db_column='myPassword')
     FName = models.CharField(_('first name'), max_length=50, blank=True, null=True)
@@ -59,26 +32,29 @@ class Account(AbstractBaseUser, PermissionsMixin):
     Office = models.CharField(_('office'), max_length=50, blank=True, null=True)
     Department = models.CharField(_('department'), max_length=50, blank=True, null=True)
     BranchCode = models.CharField(_('branch code'), max_length=10)
-    Email_Address = models.EmailField(_('email'), max_length=50, unique=True)
+    email = models.EmailField(_('email'), max_length=50, unique=True, db_column='Email_Address')
     is_superuser = models.BooleanField(
         _('superuser status'),
         default=False,
         help_text=_('Designates whether this user should be treated as a superuser.'),
     )
-    Is_Admin = models.BooleanField(
+    is_admin = models.BooleanField(
         _('admin status'),
         default=False,
         help_text=_('Designates whether this user should be treated as an admin.'),
+        db_column='Is_Admin'
     )
-    Is_HR = models.BooleanField(
+    is_hr = models.BooleanField(
         _('hr status'),
         default=False,
         help_text=_('Designates whether this user should be treated as a HR.'),
+        db_column='Is_HR'
     )
-    Is_LMS = models.BooleanField(
+    is_LMS = models.BooleanField(
         _('lms status'),
         default=False,
         help_text=_('Designates whether this user should be treated as a lms.'),
+        db_column='Is_LMS'
     )
     is_staff = models.BooleanField(
         _('staff status'),
@@ -98,20 +74,22 @@ class Account(AbstractBaseUser, PermissionsMixin):
                                    help_text=_('Designates whether the user is online.'))
     Machine = models.CharField(max_length=20, blank=True, null=True)
     Product_Version = models.CharField(max_length=20, blank=True, null=True)
-    Is_Approver = models.BooleanField(
+    is_approver = models.BooleanField(
         _('approver'),
         default=True,
         help_text=_(
             'Designates whether this user should be treated as an approver.'
         ),
+        db_column='is_approver'
     )
     Company = models.CharField(max_length=100, blank=True, null=True)
-    Is_Inquiry = models.BooleanField(
+    is_inquiry = models.BooleanField(
         _('inquiry'),
         default=True,
         help_text=_(
             'Designates whether this user should be treated as an inquiry.'
         ),
+        db_column='Is_Inquiry'
     )
     TransactedBy = models.CharField(max_length=50, blank=True, null=True)
     PostingDate = models.DateTimeField(_('posting date'), blank=True, null=True)
@@ -122,17 +100,17 @@ class Account(AbstractBaseUser, PermissionsMixin):
     Is_UniformMgmt = models.BooleanField(default=False, blank=True, null=True)
     Is_Insurance = models.BooleanField(default=False, blank=True, null=True)
 
-    EMAIL_FIELD = 'Email_Address'
-    USERNAME_FIELD = 'Email_Address'
-    REQUIRED_FIELDS = ['Username']
+    EMAIL_FIELD = 'email'
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
     objects = MyAccountManager()
 
     def __str__(self):
-        return str(self.Email_Address)
+        return str(self.email)
 
     def has_perm(self, perm, obj=None):
-        return self.Is_Admin
+        return self.is_admin
 
     def has_module_perms(self, app_label):
         return True

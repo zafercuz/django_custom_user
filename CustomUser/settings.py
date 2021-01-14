@@ -68,6 +68,9 @@ TEMPLATES = [
 ]
 
 AUTH_USER_MODEL = 'account.Account'
+AUTHENTICATION_BACKENDS = [
+    'account.backends.CustomAccountBackend',
+]
 
 WSGI_APPLICATION = 'CustomUser.wsgi.application'
 
