@@ -1,58 +1,11 @@
-from django import forms
 from django.contrib import admin
-from django.contrib.auth.models import Group
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
-
+from account.forms import UserChangeForm, UserCreationForm
 from account.models import Account
 
 
-class UserCreationForm(forms.ModelForm):
-    """A form for creating new users. Includes all the required
-    fields, plus a repeated password."""
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
-
-    class Meta:
-        model = Account
-        fields = ('email',)
-
-    def clean_password2(self):
-        # Check that the two password entries match
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
-            raise forms.ValidationError("Passwords don't match")
-        return password2
-
-    def save(self, commit=True):
-        # Save the provided password in hashed format
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
-        if commit:
-            user.save()
-        return user
-
-
-class UserChangeForm(forms.ModelForm):
-    """A form for updating users. Includes all the fields on
-    the user, but replaces the password field with admin's
-    password hash display field.
-    """
-    password = ReadOnlyPasswordHashField()
-
-    class Meta:
-        model = Account
-        fields = ('email', 'password', 'is_active', 'is_staff')
-
-    def clean_password(self):
-        # Regardless of what the user provides, return the initial value.
-        # This is done here, rather than on the field, because the
-        # field does not have access to the initial value
-        return self.initial["password"]
-
-
-class UserAdmin(BaseUserAdmin):
+class UserDBModelAdmin(admin.ModelAdmin):
+    # A handy constant for the name of the alternate database.
+    using = 'other_db'
     # The forms to add and change user instances
     form = UserChangeForm
     add_form = UserCreationForm
@@ -60,12 +13,18 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('email', 'is_staff', 'is_admin', 'is_superuser')
+    list_display = ('email', 'Emp_ID', 'is_staff', 'is_admin', 'is_superuser')
     list_filter = ('is_staff', 'is_admin', 'is_superuser')
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Permissions', {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser',
-                                    'groups', 'user_permissions',)}),
+        (None, {'fields': ('Emp_ID', 'email', 'username', 'password')}),
+        ('Permissions',
+         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',
+                     'groups', 'user_permissions',)}),
+        ('Miscellaneous',
+         {'fields': (('FName', 'MI', 'LName'), ('BranchCode', 'Designation', 'Office', 'Department'),
+                     ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
+                     ('IsOnline', 'is_inquiry', 'Is_UniformMgmt', 'Is_Insurance'), ('TransactedBy', 'PostingDate'),
+                     'Reset_Pass', ('UFullName', 'BranchName', 'CCode'),)}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.
@@ -79,9 +38,29 @@ class UserAdmin(BaseUserAdmin):
     ordering = ('email',)
     filter_horizontal = ()
 
+    def save_model(self, request, obj, form, change):
+        # Tell Django to save objects to the 'other' database.
+        obj.save(using=self.using)
+
+    def delete_model(self, request, obj):
+        # Tell Django to delete objects from the 'other' database
+        obj.delete(using=self.using)
+
+    def get_queryset(self, request):
+        # Tell Django to look for objects on the 'other' database.
+        # Only show the accounts which are admins or staff
+        return super().get_queryset(request).using(self.using).filter(is_admin=True, is_staff=True)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Tell Django to populate ForeignKey widgets using a query
+        # on the 'other' database.
+        return super().formfield_for_foreignkey(db_field, request, using=self.using, **kwargs)
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # Tell Django to populate ManyToMany widgets using a query
+        # on the 'other' database.
+        return super().formfield_for_manytomany(db_field, request, using=self.using, **kwargs)
+
 
 # Now register the new UserAdmin...
-admin.site.register(Account, UserAdmin)
-# ... and, since we're not using Django's built-in permissions,
-# unregister the Group model from admin.
-# admin.site.unregister(Group)
+admin.site.register(Account, UserDBModelAdmin)
