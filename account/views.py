@@ -9,7 +9,7 @@ def connect_user(self):
     #     result = cursor.fetchall()
     # print(result)
 
-    # Defer means to exclude column fields from the DB
-    user = Account.objects.using("other_db").defer("is_active", "is_staff")
+    # Defer means to exclude column fields from the Account Model
+    user = Account.objects.using("other_db").all()
     print(user)
     return HttpResponse("Hello World")

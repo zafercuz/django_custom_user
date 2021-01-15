@@ -24,7 +24,7 @@ SECRET_KEY = 'eqk@0!b*x&x6i%ecikr=8n-(a3#i$!(n=i-wv+ndxjwa4c%b4j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 
@@ -69,6 +69,7 @@ TEMPLATES = [
 
 AUTH_USER_MODEL = 'account.Account'
 AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
     'account.backends.CustomAccountBackend',
 ]
 
@@ -92,7 +93,7 @@ DATABASES = {
     },
     "other_db": {
         'ENGINE': 'sql_server.pyodbc',
-        'NAME': 'UserOtherDB',
+        'NAME': 'UserOtherDBV2',
         'USER': 'sa',
         'PASSWORD': 'p4$$W0rD',
         'HOST': '127.0.0.1',
