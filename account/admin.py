@@ -1,14 +1,24 @@
 from django.contrib import admin
 from account.forms import UserChangeForm, UserCreationForm
 from account.models import Account
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
 class UserDBModelAdmin(admin.ModelAdmin):
     # A handy constant for the name of the alternate database.
     using = 'other_db'
     # The forms to add and change user instances
-    form = UserChangeForm
+    # form = UserChangeForm
+    change_form = UserChangeForm
     add_form = UserCreationForm
+
+    def get_form(self, request, obj=None, **kwargs):
+        if not obj:
+            self.form = self.add_form
+        else:
+            self.form = self.change_form
+
+        return super().get_form(request, obj, **kwargs)
 
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
@@ -31,12 +41,25 @@ class UserDBModelAdmin(admin.ModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2'),
+            'fields': ('email', 'BranchCode', 'password1', 'password2'),
         }),
+        ('Permissions',
+         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',
+                     'groups', 'user_permissions',)}),
+        ('Miscellaneous',
+         {'fields': (('FName', 'MI', 'LName'), ('Designation', 'Office', 'Department'),
+                     ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
+                     ('IsOnline', 'is_inquiry', 'Is_UniformMgmt', 'Is_Insurance'), ('TransactedBy', 'PostingDate'),
+                     'Reset_Pass', ('UFullName', 'BranchName', 'CCode'),)}),
     )
     search_fields = ('email',)
     ordering = ('email',)
-    filter_horizontal = ()
+    filter_horizontal = ('groups', 'user_permissions',)
+
+    def get_fieldsets(self, request, obj=None):
+        if not obj:
+            return self.add_fieldsets
+        return super().get_fieldsets(request, obj)
 
     def save_model(self, request, obj, form, change):
         # Tell Django to save objects to the 'other' database.
@@ -49,7 +72,7 @@ class UserDBModelAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         # Tell Django to look for objects on the 'other' database.
         # Only show the accounts which are admins or staff
-        return super().get_queryset(request).using(self.using).filter(is_admin=True, is_staff=True)
+        return super().get_queryset(request).using(self.using).filter(is_staff=True)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # Tell Django to populate ForeignKey widgets using a query
