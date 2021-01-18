@@ -93,7 +93,7 @@ DATABASES = {
     },
     "other_db": {
         'ENGINE': 'sql_server.pyodbc',
-        'NAME': 'UserOtherDBV2',
+        'NAME': 'UserOtherDB',
         'USER': 'sa',
         'PASSWORD': 'p4$$W0rD',
         'HOST': '127.0.0.1',

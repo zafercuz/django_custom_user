@@ -4,7 +4,7 @@ from .models import Account
 
 class CustomAccountBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        email = username
+        email = username  # Set it to username since we defined USERNAME_FIELD = email
         password = password
         try:
             account = Account.objects.using("other_db").get(email=email)

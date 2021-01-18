@@ -4,7 +4,19 @@ from account.models import Account
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
-class UserDBModelAdmin(admin.ModelAdmin):
+# To remove log recording
+class DontLog:
+    def log_addition(self, *args):
+        return
+
+    def log_change(self, *args):
+        return
+
+    def log_deletion(self, *args):
+        return
+
+
+class UserDBModelAdmin(DontLog, admin.ModelAdmin):
     # A handy constant for the name of the alternate database.
     using = 'other_db'
     # The forms to add and change user instances
@@ -28,8 +40,7 @@ class UserDBModelAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('Emp_ID', 'email', 'username', 'password')}),
         ('Permissions',
-         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',
-                     'groups', 'user_permissions',)}),
+         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',)}),
         ('Miscellaneous',
          {'fields': (('FName', 'MI', 'LName'), ('BranchCode', 'Designation', 'Office', 'Department'),
                      ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
@@ -41,11 +52,10 @@ class UserDBModelAdmin(admin.ModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'BranchCode', 'password1', 'password2'),
+            'fields': ('email', 'username', 'Emp_ID', 'BranchCode', 'password1', 'password2'),
         }),
         ('Permissions',
-         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',
-                     'groups', 'user_permissions',)}),
+         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',)}),
         ('Miscellaneous',
          {'fields': (('FName', 'MI', 'LName'), ('Designation', 'Office', 'Department'),
                      ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
@@ -85,5 +95,4 @@ class UserDBModelAdmin(admin.ModelAdmin):
         return super().formfield_for_manytomany(db_field, request, using=self.using, **kwargs)
 
 
-# Now register the new UserAdmin...
 admin.site.register(Account, UserDBModelAdmin)
