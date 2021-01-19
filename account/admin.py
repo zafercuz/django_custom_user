@@ -1,19 +1,9 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
+
+from CustomUser.admin_no_log import DontLog
 from account.forms import UserChangeForm, UserCreationForm
 from account.models import Account
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-
-
-# To remove log recording
-class DontLog:
-    def log_addition(self, *args):
-        return
-
-    def log_change(self, *args):
-        return
-
-    def log_deletion(self, *args):
-        return
 
 
 class UserDBModelAdmin(DontLog, admin.ModelAdmin):
@@ -71,6 +61,7 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
             return self.add_fieldsets
         return super().get_fieldsets(request, obj)
 
+    # Custom Options so that it will point to the second database when adding/editing a new USER
     def save_model(self, request, obj, form, change):
         # Tell Django to save objects to the 'other' database.
         obj.save(using=self.using)
@@ -96,3 +87,4 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
 
 
 admin.site.register(Account, UserDBModelAdmin)
+admin.site.unregister(Group)
