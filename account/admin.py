@@ -14,6 +14,30 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
     change_form = UserChangeForm
     add_form = UserCreationForm
 
+    def has_add_permission(self, request):
+        if not request.user.is_superuser:
+            return False
+        else:
+            return True
+
+    def has_change_permission(self, request, obj=None):
+        if not request.user.is_superuser:
+            return False
+        else:
+            return True
+
+    def has_delete_permission(self, request, obj=None):
+        if not request.user.is_superuser:
+            return False
+        else:
+            return True
+
+    def has_view_permission(self, request, obj=None):
+        if not request.user.is_superuser:
+            return False
+        else:
+            return True
+
     def get_form(self, request, obj=None, **kwargs):
         if not obj:
             self.form = self.add_form
