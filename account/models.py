@@ -69,6 +69,13 @@ class Account(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
+    is_marketing = models.BooleanField(
+        _('marketing'),
+        default=False,
+        help_text=_(
+            'Designates whether this user should be treated as marketing team.'
+        ),
+    )
     IPAdd_Login = models.GenericIPAddressField(_('ip address login'), blank=True, null=True)
     IsOnline = models.BooleanField(_('is online'), default=False,
                                    help_text=_('Designates whether the user is online.'))
