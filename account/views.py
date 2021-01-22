@@ -12,11 +12,11 @@ def connect_user(self):
     cursor = connections['other_db'].cursor()
     try:
         user_list = []
-        cursor.execute("{call dbo.mg_ShowUserByUname(%s)}", ["admin"])
+        cursor.execute("{call dbo.mg_ShowUserByUname(%s)}", ["magamus"])
         result_set = cursor.fetchall()
         if result_set:
-            user = Account()
             for result in result_set:
+                user = Account()
                 user.TID = result[0]
                 user.Emp_ID = result[1]
                 user.username = result[2]
@@ -54,7 +54,6 @@ def connect_user(self):
                 user.is_marketing = result[34]
                 user_list.append(user)
 
-            print(user_list)
     finally:
         cursor.close()
 

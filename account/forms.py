@@ -25,6 +25,8 @@ class UserCreationForm(forms.ModelForm):
     def save(self, commit=True):
         # Save the provided password in hashed format
         user = super().save(commit=False)
+
+        # Do the Stored Procedure of saving/editing a User here instead of having "user.set_password"
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
