@@ -55,11 +55,11 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
         (None, {'fields': ('Emp_ID', 'email', 'username',)}),
         ('Permissions',
          {'fields': (
-             'is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver', 'is_marketing',)}),
+             'is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_approver', 'is_marketing',)}),
         ('Miscellaneous',
          {'fields': (('FName', 'MI', 'LName'), ('BranchCode', 'Designation', 'Office', 'Department'),
                      ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
-                     ('IsOnline', 'is_inquiry', 'Is_UniformMgmt', 'Is_Insurance'), ('TransactedBy', 'PostingDate'),
+                     ('is_inquiry', 'Is_UniformMgmt', 'Is_Insurance'), ('TransactedBy', 'PostingDate'),
                      'Reset_Pass', ('UFullName', 'BranchName', 'CCode'),)}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -72,11 +72,11 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
         }),
         ('Permissions',
          {'fields': (
-             'is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver', 'is_marketing')}),
+             'is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_approver', 'is_marketing')}),
         ('Miscellaneous',
          {'fields': (('Designation', 'Office', 'Department'),
                      ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
-                     ('IsOnline', 'is_inquiry', 'Is_UniformMgmt', 'Is_Insurance'), ('TransactedBy', 'PostingDate'),
+                     ('is_inquiry', 'Is_UniformMgmt', 'Is_Insurance'), ('TransactedBy', 'PostingDate'),
                      'Reset_Pass', ('UFullName', 'BranchName', 'CCode'),)}),
     )
     search_fields = ('email',)
