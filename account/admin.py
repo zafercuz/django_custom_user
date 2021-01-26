@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django.db import connections
 
 from CustomUser.admin_no_log import DontLog
 from account.forms import UserChangeForm, UserCreationForm
@@ -10,7 +11,6 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
     # A handy constant for the name of the alternate database.
     using = 'other_db'
     # The forms to add and change user instances
-    # form = UserChangeForm
     change_form = UserChangeForm
     add_form = UserCreationForm
 
@@ -52,9 +52,10 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
     list_display = ('email', 'Emp_ID', 'is_staff', 'is_admin', 'is_superuser')
     list_filter = ('is_staff', 'is_admin', 'is_superuser')
     fieldsets = (
-        (None, {'fields': ('Emp_ID', 'email', 'username', 'password')}),
+        (None, {'fields': ('Emp_ID', 'email', 'username',)}),
         ('Permissions',
-         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',)}),
+         {'fields': (
+             'is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver', 'is_marketing',)}),
         ('Miscellaneous',
          {'fields': (('FName', 'MI', 'LName'), ('BranchCode', 'Designation', 'Office', 'Department'),
                      ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
@@ -66,12 +67,14 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'username', 'Emp_ID', 'BranchCode', 'password1', 'password2'),
+            'fields': (
+                ('email', 'username', 'Emp_ID', 'BranchCode',), ('password1', 'password2'), ('FName', 'MI', 'LName')),
         }),
         ('Permissions',
-         {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver',)}),
+         {'fields': (
+             'is_admin', 'is_active', 'is_staff', 'is_superuser', 'is_hr', 'is_LMS', 'is_approver', 'is_marketing')}),
         ('Miscellaneous',
-         {'fields': (('FName', 'MI', 'LName'), ('Designation', 'Office', 'Department'),
+         {'fields': (('Designation', 'Office', 'Department'),
                      ('IPAdd_Login', 'Machine'), ('Product_Version', 'Company'),
                      ('IsOnline', 'is_inquiry', 'Is_UniformMgmt', 'Is_Insurance'), ('TransactedBy', 'PostingDate'),
                      'Reset_Pass', ('UFullName', 'BranchName', 'CCode'),)}),
@@ -86,9 +89,20 @@ class UserDBModelAdmin(DontLog, admin.ModelAdmin):
         return super().get_fieldsets(request, obj)
 
     # Custom Options so that it will point to the second database when adding/editing a new USER
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request, obj: Account, form, change):
         # Tell Django to save objects to the 'other' database.
-        obj.save(using=self.using)
+        cursor = connections['other_db'].cursor()
+        crud_event = "CREATE" if not change else "UPDATE"
+        password = form.cleaned_data['password1'] if not change else None
+        params = [obj.BranchCode, obj.username, password, obj.FName, obj.MI, obj.LName,
+                  obj.Emp_ID, obj.Designation, obj.BranchName, obj.CCode, obj.Company, obj.Office, obj.Department,
+                  obj.email, obj.is_approver, obj.is_admin, obj.is_superuser, obj.is_inquiry, obj.is_hr,
+                  obj.Is_UniformMgmt, obj.Is_Insurance, obj.TransactedBy, crud_event, False, obj.is_staff,
+                  obj.is_active, obj.is_marketing]
+        cursor.execute(
+            "{call dbo.mg_CRUD_UserManagement(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"
+            "%s,%s,%s,%s)}",
+            params)
 
     def delete_model(self, request, obj):
         # Tell Django to delete objects from the 'other' database

@@ -1,6 +1,5 @@
 from django.db import connections
 from django.http import HttpResponse
-from account.models import Account
 
 
 def dict_fetch_all(cursor):

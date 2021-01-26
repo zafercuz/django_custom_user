@@ -25,9 +25,9 @@ class Account(AbstractBaseUser, PermissionsMixin):
         db_column='Username'
     )
     password = models.CharField(_('password'), max_length=128, db_column='myPassword')
-    FName = models.CharField(_('first name'), max_length=50, blank=True, null=True)
-    MI = models.CharField(_('middle initial'), max_length=50, blank=True, null=True)
-    LName = models.CharField(_('last name'), max_length=50, blank=True, null=True)
+    FName = models.CharField(_('first name'), max_length=50, null=True)
+    MI = models.CharField(_('middle initial'), max_length=50, null=True)
+    LName = models.CharField(_('last name'), max_length=50, null=True)
     Designation = models.CharField(_('designation'), max_length=50, blank=True, null=True)
     Office = models.CharField(_('office'), max_length=50, blank=True, null=True)
     Department = models.CharField(_('department'), max_length=50, blank=True, null=True)
@@ -83,7 +83,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     Product_Version = models.CharField(max_length=20, blank=True, null=True)
     is_approver = models.BooleanField(
         _('approver'),
-        default=True,
+        default=False,
         help_text=_(
             'Designates whether this user should be treated as an approver.'
         ),
@@ -92,7 +92,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     Company = models.CharField(max_length=100, blank=True, null=True)
     is_inquiry = models.BooleanField(
         _('inquiry'),
-        default=True,
+        default=False,
         help_text=_(
             'Designates whether this user should be treated as an inquiry.'
         ),
