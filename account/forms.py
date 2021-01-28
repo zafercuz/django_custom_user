@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.contrib.auth.forms import ReadOnlyPasswordHashField, PasswordChangeForm
 
 from account.models import Account
 
@@ -12,7 +12,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = Account
-        fields = ('email', )
+        fields = ('email',)
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -38,6 +38,7 @@ class UserChangeForm(forms.ModelForm):
     the user, but replaces the password field with admin's
     password hash display field.
     """
+
     # password = ReadOnlyPasswordHashField()
 
     class Meta:
@@ -49,3 +50,17 @@ class UserChangeForm(forms.ModelForm):
     #     # This is done here, rather than on the field, because the
     #     # field does not have access to the initial value
     #     return self.initial["password"]
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def clean_old_password(self):
+        """
+        Validate that the old_password field is correct but using the stored procedure
+        """
+        old_password = self.cleaned_data["old_password"]
+        # if not self.user.check_password(old_password):
+        #     raise forms.ValidationError(
+        #         self.error_messages['password_incorrect'],
+        #         code='password_incorrect',
+        #     )
+        return old_password

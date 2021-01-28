@@ -16,9 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from account.views import CustomPasswordChangeView
+from django.contrib.auth import views
 
 urlpatterns = [
+    path('admin/password_change/done/', views.PasswordChangeDoneView.as_view(), name='password_change_done'),
+    path('admin/password_change/', CustomPasswordChangeView.as_view(), name='password_change'),
     path('admin/', admin.site.urls),
-    path('admin/account/password_change/', CustomPasswordChangeView.as_view(), name='password_change'),
     path('user/', include('account.urls'))
 ]
+
+admin.site.site_header = "Honda Motor World Admin"
+admin.site.site_title = "Honda Motor World Admin Portal"
