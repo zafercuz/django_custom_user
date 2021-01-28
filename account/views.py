@@ -1,5 +1,6 @@
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db import connections
 from django.http import HttpResponse
 from django.contrib.auth.views import PasswordContextMixin
@@ -11,6 +12,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView
 
 from account.forms import CustomPasswordChangeForm
+from account.models import Account
 
 
 def dict_fetch_all(cursor):
@@ -43,16 +45,14 @@ def connect_user(self):
     finally:
         cursor.close()
 
-    # Defer means to exclude column fields from the Account Model
-    # user = Account.objects.using("other_db").all()
-    # print(user)
     return HttpResponse("Hello World")
 
 
-class CustomPasswordChangeView(PasswordContextMixin, FormView):
+class CustomPasswordChangeView(PasswordContextMixin, SuccessMessageMixin, FormView):
     form_class = CustomPasswordChangeForm
-    success_url = reverse_lazy('password_change_done')
+    success_url = reverse_lazy('admin:index')
     template_name = 'registration/password_change_form.html'
+    success_message = "Password successfully changed, please login again"
     title = _('Password change')
 
     @method_decorator(sensitive_post_parameters())
@@ -67,9 +67,14 @@ class CustomPasswordChangeView(PasswordContextMixin, FormView):
         return kwargs
 
     def form_valid(self, form):
-        print("FORM IS VALID")
-        # form.save()
-        # # Updating the password logs out all other sessions for the user
-        # # except the current one.
-        # update_session_auth_hash(self.request, form.user)
+        cursor = connections['other_db'].cursor()
+        account: Account = self.request.user
+        cursor.execute("{call dbo.mg_UpdateUserPassword(%s,%s)}",
+                       [account.username, form.cleaned_data['new_password1']])
+        result_set = dict_fetch_all(cursor)
+        if result_set[0]['Status'] == 1:
+            raise Exception('500 error')
+        # Updating the password logs out all other sessions for the user
+        # except the current one.
+        update_session_auth_hash(self.request, form.user)
         return super().form_valid(form)

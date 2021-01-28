@@ -153,3 +153,5 @@ PASSWORD_HASHERS = [
 ]
 
 FILE_CHARSET = 'UTF-8'
+
+LOGIN_URL = '/admin/login/'

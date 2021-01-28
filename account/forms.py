@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField, PasswordChangeForm
+from django.db import connections
 
+from account.backends import dict_fetch_all
 from account.models import Account
 
 
@@ -57,10 +59,14 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         """
         Validate that the old_password field is correct but using the stored procedure
         """
+        cursor = connections['other_db'].cursor()
         old_password = self.cleaned_data["old_password"]
-        # if not self.user.check_password(old_password):
-        #     raise forms.ValidationError(
-        #         self.error_messages['password_incorrect'],
-        #         code='password_incorrect',
-        #     )
+        account: Account = self.user
+        cursor.execute("{call dbo.mg_CheckPassword(%s,%s)}", [account.username, old_password])
+        result_set = dict_fetch_all(cursor)
+        if result_set[0]['Status'] == 1:
+            raise forms.ValidationError(
+                self.error_messages['password_incorrect'],
+                code='password_incorrect',
+            )
         return old_password
