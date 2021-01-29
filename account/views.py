@@ -2,7 +2,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import connections
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.auth.views import PasswordContextMixin
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
@@ -78,3 +78,10 @@ class CustomPasswordChangeView(PasswordContextMixin, SuccessMessageMixin, FormVi
         # except the current one.
         update_session_auth_hash(self.request, form.user)
         return super().form_valid(form)
+
+
+def custom_password_change_done(request):
+    """
+    To override password change done page, we will just raise an http404 page not found exception
+    """
+    raise Http404("Page not found")
